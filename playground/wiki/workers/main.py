@@ -1,20 +1,28 @@
-from YahooFinanceWorkers import YahooFinancePriceWorker
+from YahooFinanceWorkers import YahooFinancePriceScheduler
 from WikiWorker import WikiWorker
 import time
+from multiprocessing import Queue
 
 def main():
+    symbol_queue = Queue()
     scraper_start_time = time.time()
 
     wikiWorker = WikiWorker()
-    current_workers = []
+    yahoo_finance_price_scheduler_threads = []
+    num_yahoo_finance_price_workers = 4
+
+    for i in range(num_yahoo_finance_price_workers):
+        yahooFinancePriceScheduler = YahooFinancePriceScheduler(input_queue=symbol_queue)
+        yahoo_finance_price_scheduler_threads.append(yahooFinancePriceScheduler)
 
     for symbol in wikiWorker.get_sp_500_companies():
-        yahooFinanceProceWorker = YahooFinancePriceWorker(symbol=symbol)
-        current_workers.append(yahooFinanceProceWorker)
-
+        symbol_queue.put(symbol)
     
-    for i in range(len(current_workers)):
-        current_workers[i].join()
+    for i in range(len(yahoo_finance_price_scheduler_threads)):
+        symbol_queue.put("Done")
+
+    for i in range(len(yahoo_finance_price_scheduler_threads)):
+        yahoo_finance_price_scheduler_threads[i].join()
 
     print('Extracting time took: ', round(time.time() - scraper_start_time, 1))
 
