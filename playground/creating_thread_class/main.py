@@ -9,7 +9,7 @@ def main():
     current_workers = []
     for i in range(5):
         maximum_value = (i+1) * 1e6
-        squaredsum = SquaredSumWorker(n = int(maximum_value))
+        squaredsum = SquaredSumWorker(n = int(maximum_value), daemon=False) # daemon needs to be initialized before
         current_workers.append(squaredsum)
 
     for i in range(len(current_workers)):
